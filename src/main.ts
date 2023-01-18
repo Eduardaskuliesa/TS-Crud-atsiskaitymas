@@ -8,5 +8,4 @@ const carsCollection = new CarsCollection({
     models,
     brands,
 });
-
 console.log(carsCollection);

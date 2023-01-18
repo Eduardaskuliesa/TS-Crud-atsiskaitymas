@@ -1,6 +1,7 @@
-import Brand from '../types/brand';
-import Car from '../types/car';
-import Model from '../types/model';
+import type Brand from '../types/brand';
+import type Car from '../types/car';
+import type Model from '../types/model';
+import type CarJoined from '../types/car-joined';
 
 type CarsCollectionProps = {
     models: Model[],
@@ -9,21 +10,27 @@ type CarsCollectionProps = {
 };
 
 class CarsCollection {
-    private models: Model[];
+    private props: CarsCollectionProps;
 
-    private cars: Car[];
-
-    private brands: Brand[];
-
-    constructor({
-        models,
-        cars,
-        brands,
-    }: CarsCollectionProps) {
-        this.models = JSON.parse(JSON.stringify(models));
-        this.cars = JSON.parse(JSON.stringify(cars));
-        this.brands = JSON.parse(JSON.stringify(brands));
+    constructor(props: CarsCollectionProps) {
+        this.props = props;
     }
+
+   private joinCar = ({ modelId, ...car }: Car) => {
+    const { brands, models } = this.props;
+    const carModel = models.find((model) => model.id === modelId);
+    const carBrand = brands.find((brand) => brand.id === carModel?.brandId);
+
+    return {
+        ...car,
+        brand: (carBrand && carBrand.title) ?? 'unknown',
+        model: (carModel && carModel.title) ?? 'unknown',
+    };
+   };
+
+   public get all(): CarJoined [] {
+     return this.props.cars.map(this.joinCar);
+   }
 }
 
 export default CarsCollection;
