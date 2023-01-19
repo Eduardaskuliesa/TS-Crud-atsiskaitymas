@@ -4,6 +4,13 @@ import cars from '../data/cars';
 import models from '../data/models';
 import Table from './table';
 import stringifyProps from '../helpers/stringify-props';
+import SelectField, { type Option } from './select-field';
+import type Brand from '../types/brand';
+
+const brandToOptions = ({ id, title }: Brand): Option => ({
+  value: id,
+  text: title,
+});
 
 class App {
     private htmlElement: HTMLElement;
@@ -18,7 +25,14 @@ class App {
       this.htmlElement = foundElement;
     }
 
-    initialize = (): void => {
+    public initialize = (): void => {
+      const container = document.createElement('div');
+      container.className = 'container my-5 d-flex flex-column gap-3';
+
+      const selectField = new SelectField({
+        options: this.carsColletion.brand.map(brandToOptions),
+      });
+
       const carTable = new Table({
         title: 'Visi automobiliai',
         columns: {
@@ -30,9 +44,11 @@ class App {
         },
         rowsData: this.carsColletion.all.map(stringifyProps),
       });
-      const container = document.createElement('div');
-      container.className = 'container my-5';
-      container.appendChild(carTable.htmlElement);
+
+      container.append(
+        selectField.htmlElement,
+        carTable.htmlElement,
+      );
 
       this.htmlElement.append(container);
     };

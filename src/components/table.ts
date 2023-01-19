@@ -35,9 +35,10 @@ class Table<Type extends RowData> {
 
         this.thead.innerHTML = `
           <tr>
-            <th colspan="${headersArray.length}" class="text-center h3">${title}</th>
+            <th colspan="${headersArray.length}" class=" thead-dark text-center h3 bg-dark text-light">${title}</th>
           </tr>
-          <tr>${headersRowHtmlString}</tr>
+          <tr class ="bg-dark text-light"> ${headersRowHtmlString}
+          </tr>
         `;
       };
 
