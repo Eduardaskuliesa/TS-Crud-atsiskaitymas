@@ -5,16 +5,20 @@ export type Option = {
 
 type SelectFieldProps = {
     options: Option[],
+    onChange : (event: Event, value: string, option: Option) => void
 };
 
 class SelectField {
-    public htmlElement: HTMLElement;
+    public htmlElement: HTMLSelectElement;
 
-    public options: SelectFieldProps['options'];
+    private options: SelectFieldProps['options'];
 
-    public constructor({ options }: SelectFieldProps) {
+    private onChange: SelectFieldProps['onChange'];
+
+    public constructor({ options, onChange }: SelectFieldProps) {
         this.htmlElement = document.createElement('select');
         this.options = options;
+        this.onChange = onChange;
         this.intialize();
     }
 
@@ -22,6 +26,14 @@ class SelectField {
         const optionStr = this.options
         .map(({ text, value }) => `<option value="${value}">${text}</option>`)
         .join('');
+
+        this.htmlElement.addEventListener('change', (event) => {
+            if (this.onChange !== undefined) {
+              const { value } = this.htmlElement;
+              const [option] = this.options.filter((opt) => opt.value === value);
+              this.onChange(event, value, option);
+            }
+        });
 
         this.htmlElement.className = 'form-select';
         this.htmlElement.innerHTML = optionStr;
