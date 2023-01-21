@@ -1,12 +1,13 @@
-type RowData = {
+export type RowData = {
     id: string,
     [key: string]: string,
 };
 
-export type TableProps<Type> = {
+export type TableProps<Type extends RowData> = {
     title: string,
     columns: Type,
     rowsData: Type[],
+    onDelete: (id: string) => void,
 };
 
 class Table<Type extends RowData> {
@@ -45,11 +46,13 @@ class Table<Type extends RowData> {
         const { title, columns } = this.props;
 
         const headersArray = Object.values(columns);
-        const headersRowHtmlString = headersArray.map((header) => `<th>${header}</th>`).join('');
+        const headersRowHtmlString = `${headersArray
+        .map((header) => `<th>${header}</th>`)
+        .join('')}<th></th>`;
 
         this.thead.innerHTML = `
           <tr>
-            <th colspan="${headersArray.length}" class=" thead-dark text-center h3 bg-dark text-light">${title}</th>
+            <th colspan="${headersArray.length + 1}" class=" thead-dark text-center h3 bg-dark text-light">${title}</th>
           </tr>
           <tr class ="bg-dark text-light"> ${headersRowHtmlString}
           </tr>
@@ -70,10 +73,27 @@ class Table<Type extends RowData> {
 
             rowHtmlElement.innerHTML = cellsHtmlString;
 
+            this.addActionsCell(rowHtmlElement, rowData.id);
+
             return rowHtmlElement;
           });
 
         this.tbody.append(...rowsHtmlElements);
+      };
+
+      private addActionsCell = (rowHtmlElement: HTMLTableRowElement, id: string): void => {
+        const { onDelete } = this.props;
+
+        const buttonCell = document.createElement('td');
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.innerHTML = '✕';
+        deleteButton.className = 'btn btn-danger';
+        deleteButton.addEventListener('click', () => onDelete(id));
+
+        buttonCell.append(deleteButton);
+        rowHtmlElement.append(buttonCell);
       };
 
     public updateProps = (newProps: Partial<TableProps<Type>>): void => {
