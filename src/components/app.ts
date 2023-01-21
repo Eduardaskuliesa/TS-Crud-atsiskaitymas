@@ -12,6 +12,9 @@ const brandToOptions = ({ id, title }: Brand): Option => ({
   text: title,
 });
 
+const ALL_CATEGORIES_ID = '-1';
+const ALL_CATEGORIES_TITLE = 'All Cars';
+
 class App {
     private htmlElement: HTMLElement;
 
@@ -29,16 +32,8 @@ class App {
       const container = document.createElement('div');
       container.className = 'container my-5 d-flex flex-column gap-3';
 
-      const selectField = new SelectField({
-        options: this.carsColletion.brand.map(brandToOptions),
-        onChange: (_, brandId) => {
-          const newCars = this.carsColletion.getBrandById(brandId);
-          console.log(newCars);
-         },
-      });
-
       const carTable = new Table({
-        title: 'Visi automobiliai',
+        title: ALL_CATEGORIES_TITLE,
         columns: {
           id: 'Id',
           brand: 'Marke',
@@ -47,6 +42,23 @@ class App {
           year: 'Metai',
         },
         rowsData: this.carsColletion.all.map(stringifyProps),
+      });
+
+      const selectField = new SelectField({
+        options: [
+          { text: ALL_CATEGORIES_TITLE, value: ALL_CATEGORIES_ID },
+          ...this.carsColletion.brand.map(brandToOptions),
+        ],
+        onChange: (_, brandId, { text: brandTitle }) => {
+          const newCars = brandId === ALL_CATEGORIES_ID
+          ? this.carsColletion.all
+          : this.carsColletion.getBrandById(brandId);
+
+          carTable.updateProps({
+            rowsData: newCars.map(stringifyProps),
+            title: brandTitle,
+          });
+         },
       });
 
       container.append(
