@@ -5,9 +5,14 @@ import models from '../data/models';
 import CarsCollection from '../helpers/cars-collection';
 import stringifyProps, { StringifyObjectProps } from '../helpers/stringify-props';
 import CarJoined from '../types/car-joined';
-import SelectField from './select-field';
+import SelectField, { type Option, type SelectFieldProps } from './select-field';
+import Brand from '../types/brand';
 
 const ALL_BRANDS_TITLE = 'All cars';
+const brandToOption = ({ id, title }: Brand): Option => ({
+  value: id,
+  text: title,
+});
 
 class App {
   private carsCollection: CarsCollection;
@@ -40,9 +45,8 @@ class App {
     this.htmlElement = foundElement;
   }
 
-  private handleBrandChange = (brandId: string): void => {
+  private handleBrandChange: SelectFieldProps['onChange'] = (_, brandId) => {
     this.selectedBrandId = brandId;
-
     this.update();
   };
 
@@ -53,35 +57,36 @@ class App {
   };
 
   private update = (): void => {
-    const { selectedBrandId, carsCollection } = this;
-
-    if (selectedBrandId === null) {
-      this.carTable.updateProps({
-        title: 'All cars',
-        rowsData: carsCollection.all.map(stringifyProps),
-      });
+    if (this.selectedBrandId) {
+      const foundBrand = brands.find((brandy) => brandy.id === this.selectedBrandId);
+      if (foundBrand) {
+        this.carTable.updateProps({
+          title: foundBrand.title,
+          rowsData: this.carsCollection.getBrandById(this.selectedBrandId)
+          .map(stringifyProps),
+        });
+      }
     } else {
-      const brand = brands.find((branded) => branded.id === selectedBrandId);
-      if (brand === undefined) throw new Error('Selected not exist car brand');
-
       this.carTable.updateProps({
-        title: `${brand.title} Cars`,
-        rowsData: carsCollection.getByBrandId(selectedBrandId).map(stringifyProps),
+        title: ALL_BRANDS_TITLE,
+        rowsData: this.carsCollection.all.map(stringifyProps),
       });
     }
   };
 
   public initialize = (): void => {
-    const brandSelect = new SelectField({
-      labelText: 'Brand',
+    const selectField = new SelectField({
+      options: [
+        { text: ALL_BRANDS_TITLE, value: '' },
+        ...this.carsCollection.brand.map(brandToOption),
+      ],
       onChange: this.handleBrandChange,
-      options: brands.map(({ id, title }) => ({ value: id, title })),
     });
 
     const container = document.createElement('div');
     container.className = 'container my-4 d-flex  flex-column gap-3';
     container.append(
-      brandSelect.htmlElement,
+      selectField.htmlElement,
       this.carTable.htmlElement,
     );
 
